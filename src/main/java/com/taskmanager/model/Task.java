@@ -1,24 +1,42 @@
 package com.taskmanager.model;
 
 import jakarta.persistence.*;
-import lombok.*;
 
 @Entity
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Table(name = "tasks")
 public class Task {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String title;
+
     private String description;
-    private boolean completed;
 
     @ManyToOne
+    @JoinColumn(name = "user_id")
     private User user;
 
+    // ✅ Tambahkan getter dan setter
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
     public void setUser(User user) {
-    this.user = user;
+        this.user = user;
     }
 }

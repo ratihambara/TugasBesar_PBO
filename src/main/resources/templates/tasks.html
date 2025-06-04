@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head><title>Tasks</title></head>
+<body>
+<h2>Your Tasks</h2>
+<form method="post" action="/add">
+    <input name="description" placeholder="New Task" required>
+    <button type="submit">Add Task</button>
+</form>
+<ul>
+    <th:block th:each="task : ${tasks}">
+        <li>
+            <span th:text="${task.description}"></span>
+            <form method="post" action="/delete" style="display:inline;">
+                <input type="hidden" name="id" th:value="${task.id}">
+                <button type="submit">Delete</button>
+            </form>
+        </li>
+    </th:block>
+</ul>
+<form action="/logout" method="post">
+    <button>Logout</button>
+</form>
+</body>
+</html>

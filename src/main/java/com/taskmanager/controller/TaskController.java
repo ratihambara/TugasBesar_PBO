@@ -1,28 +1,44 @@
 package com.taskmanager.controller;
 
-import com.taskmanager.model.Task;
+import com.taskmanager.model.User;
+import com.taskmanager.repository.UserRepository;
 import com.taskmanager.service.TaskService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.security.Principal;
 
-@RestController
-@RequestMapping("/api/tasks")
+@Controller
 public class TaskController {
+    @Autowired private TaskService taskService;
+    @Autowired private UserRepository userRepository;
 
-    private final TaskService taskService;
-
-    public TaskController(TaskService taskService) {
-        this.taskService = taskService;
+    @GetMapping("/")
+    public String viewTasks(Model model, Principal principal) {
+        System.out.println("✅ Masuk ke GET /");
+        if (principal != null) {
+            System.out.println("🔐 Username: " + principal.getName());
+            User user = userRepository.findByUsername(principal.getName()).orElse(null);
+            model.addAttribute("tasks", taskService.getTasks(user));
+            return "tasks"; 
+        } else {
+            System.out.println("❌ Principal null");
+            return "redirect:/login";
+        }
     }
 
-    @GetMapping("/{username}")
-    public List<Task> getTasks(@PathVariable String username) {
-        return taskService.getTasksByUsername(username);
+    @PostMapping("/add")
+    public String addTask(@RequestParam String description, Principal principal) {
+        User user = userRepository.findByUsername(principal.getName()).orElse(null);
+        taskService.addTask(description, user);
+        return "redirect:/";
     }
 
-    @PostMapping("/{username}")
-    public Task createTask(@PathVariable String username, @RequestBody Task task) {
-        return taskService.createTask(username, task);
+    @PostMapping("/delete")
+    public String deleteTask(@RequestParam Long id) {
+        taskService.deleteTask(id);
+        return "redirect:/";
     }
 }
