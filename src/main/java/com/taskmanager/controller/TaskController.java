@@ -17,14 +17,14 @@ public class TaskController {
 
     @GetMapping("/")
     public String viewTasks(Model model, Principal principal) {
-        System.out.println("✅ Masuk ke GET /");
+        System.out.println("Masuk ke GET /");
         if (principal != null) {
-            System.out.println("🔐 Username: " + principal.getName());
+            System.out.println("Username: " + principal.getName());
             User user = userRepository.findByUsername(principal.getName()).orElse(null);
             model.addAttribute("tasks", taskService.getTasks(user));
             return "tasks"; 
         } else {
-            System.out.println("❌ Principal null");
+            System.out.println("Principal null");
             return "redirect:/login";
         }
     }

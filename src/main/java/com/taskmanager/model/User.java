@@ -13,7 +13,7 @@ public class User {
 
     private String password;
 
-    // ✅ Tambahkan getter dan setter
+    //getter dan setter
     public Long getId() {
         return id;
     }

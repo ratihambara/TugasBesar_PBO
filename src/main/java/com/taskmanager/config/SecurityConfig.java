@@ -18,19 +18,22 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/register").permitAll()
-                .anyRequest().authenticated()
-            )
-            .formLogin(login -> login.loginPage("/login")
+public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    http
+        .authorizeHttpRequests(auth -> auth
+            .requestMatchers("/register").permitAll()
+            .anyRequest().authenticated()
+        )
+        .formLogin(login -> login
+            .loginPage("/login")
             .defaultSuccessUrl("/", true)
+            .failureUrl("/login?error")
             .permitAll()
-            )
-            .logout(logout -> logout.permitAll());
-        return http.build();
-    }
+        )
+        .logout(logout -> logout.permitAll());
+    return http.build();
+}
+
 
     @Bean
     public AuthenticationManager authManager(HttpSecurity http, UserService userService) throws Exception {

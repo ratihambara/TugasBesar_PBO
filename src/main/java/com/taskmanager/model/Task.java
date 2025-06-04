@@ -15,7 +15,7 @@ public class Task {
     @JoinColumn(name = "user_id")
     private User user;
 
-    // ✅ Tambahkan getter dan setter
+    //getter dan setter
     public Long getId() {
         return id;
     }
