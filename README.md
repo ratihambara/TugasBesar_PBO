@@ -1,106 +1,183 @@
-# NightFall POS 🌙 - Spring Boot + Static HTML POS Application
+# Task Manager - Spring Boot + Static HTML/JS Application
 
-A simple, yet functional Point-of-Sale (POS) system designed for construction material suppliers, built with Spring Boot for the backend and static HTML/CSS/JS for the frontend.
+A simple task management application built with Spring Boot for the backend and static HTML, Tailwind CSS, and vanilla JavaScript for the frontend. It allows users to register, log in, and manage their tasks (add, view, edit, delete, mark complete, set priority, set due date).
 
 ## Overview
 
-This project demonstrates a basic web application structure using modern Java technologies and straightforward frontend development. It allows users (Cashiers/Managers) to log in, view materials, place orders for customers, and view past orders with receipts.
+This project demonstrates a basic web application structure using Spring Boot for RESTful APIs and a client-side rendered frontend for a dynamic user experience.
+
+## Features
+
+*   **User Authentication:**
+    *   User registration
+    *   User login
+*   **Task Management:**
+    *   Add new tasks with description, priority, and due date.
+    *   View all tasks.
+    *   Edit existing tasks (description, priority, due date, completion status).
+    *   Delete individual tasks.
+    *   Mark tasks as complete/incomplete.
+    *   Client-side sorting of tasks by priority (High to Low) and then by due date (earliest first).
+    *   "Clear All Tasks" functionality.
+*   **Data Seeding:**
+    *   An initial 'admin' user is created.
+    *   Sample tasks are seeded for the 'admin' user.
 
 ## Components
 
 ### Backend (Spring Boot)
 
-*   **Framework:** [Spring Boot 3.4.5](https://spring.io/projects/spring-boot) provides a robust foundation for building the RESTful API.
-*   **Data Persistence:** [Spring Data JPA](https://spring.io/projects/spring-data-jpa) simplifies database interactions using repositories and entities.
-*   **Database:** [PostgreSQL](https://www.postgresql.org/) is used as the relational database. The connection details (configured for Neon cloud PostgreSQL) are in `src/main/resources/application.properties`. `spring.jpa.hibernate.ddl-auto=update` allows Hibernate to automatically update the database schema based on entity definitions.
-*   **API:** RESTful endpoints are defined in the `controller` package to handle requests from the frontend.
-*   **Business Logic:** Services in the `service` package encapsulate the core application logic (e.g., placing an order, user authentication).
-*   **Data Models:** Entities in the `model` package represent the database tables (User, Material, Order). Lombok annotations (`@Data`, `@Entity`, etc.) reduce boilerplate code.
-*   **Repositories:** Interfaces in the `repository` package extend `JpaRepository` to provide CRUD operations for the entities.
-*   **Initial Data:** `KaelApplication.java` includes a `CommandLineRunner` bean that populates the database with initial user and material data if the tables are empty.
+*   **Framework:** Spring Boot is used for building the RESTful API.
+*   **Data Persistence:** Spring Data JPA for database interactions.
+*   **Database:** H2 in-memory database (default for Spring Boot, can be configured for others like PostgreSQL in `application.properties`). `spring.jpa.hibernate.ddl-auto=update` allows Hibernate to automatically update the database schema.
+*   **API:** RESTful endpoints are defined in `com.taskmanager.controller` to handle requests from the frontend.
+    *   `AuthController`: Handles user registration (`/auth/register`) and login (`/auth/login`).
+    *   `TaskController`: Handles all task-related CRUD operations (`/tasks`, `/tasks/add`, `/tasks/{id}`, `/tasks/all`).
+*   **Business Logic:** Services in `com.taskmanager.service` encapsulate the core application logic.
+    *   `UserService`: Manages user creation and retrieval.
+    *   `TaskService`: Manages task creation, retrieval, updates, and deletion.
+*   **Data Models:** Entities in `com.taskmanager.model` represent the database tables.
+    *   `User`: Stores user credentials.
+    *   `Task`: Stores task details including description, priority (integer), completed (boolean), and dueDate (LocalDate).
+*   **Repositories:** Interfaces in `com.taskmanager.repository` extend `JpaRepository` for CRUD operations.
+*   **Initial Data:** `TaskManagerApplication.java` includes a `CommandLineRunner` to seed initial user and task data.
 
-### Frontend (Static HTML, Tailwind CSS, JavaScript)
+### Frontend (Static HTML, Tailwind CSS, Vanilla JavaScript)
 
-*   **Structure:** Plain HTML files located in `src/main/resources/static/` define the user interface (`index.html`, `login.html`, `order.html`, `orders.html`, `receipt.html`).
-*   **Styling:** [Tailwind CSS](https://tailwindcss.com/) (via CDN) is used for utility-first styling, providing a modern look and feel with the "Neo-Brutalist" aesthetic. Custom styles are minimal.
-*   **Interactivity:** Vanilla JavaScript embedded within `<script>` tags in each HTML file handles:
-    *   **API Interaction:** Using the `fetch` API to communicate with the Spring Boot backend (e.g., logging in, fetching materials, placing orders, retrieving order lists/details).
-    *   **DOM Manipulation:** Dynamically updating the page content based on API responses or user actions (e.g., populating material dropdowns, displaying order totals, showing success/error messages).
-    *   **Form Handling:** Capturing user input and validating forms before submission.
-    *   **Basic Auth Simulation:** Using `sessionStorage` to store a simple login flag (`isLoggedIn`) for basic route protection (redirecting to `login.html` if not set). **Note:** This is *not* secure production authentication.
-    *   **UI Feedback:** Displaying loading states and toast notifications.
+*   **Structure:** HTML files located in `src/main/resources/static/` define the user interface (`index.html` (redirects to login/tasks), `login.html`, `register.html`, `tasks.html`).
+*   **Styling:** Tailwind CSS (via CDN) is used for utility-first styling.
+*   **Interactivity:** Vanilla JavaScript embedded within `<script>` tags in `tasks.html` (and other pages for auth) handles:
+    *   **API Interaction:** Using the `fetch` API to communicate with the Spring Boot backend.
+    *   **DOM Manipulation:** Dynamically rendering and updating the task list and forms.
+    *   **Form Handling:** Capturing user input for registration, login, and task management.
+    *   **Session Management:** Uses `sessionStorage` to store the logged-in user's username. Redirects to `login.html` if API calls result in 401/403 errors, indicating an unauthorized or unauthenticated user.
+    *   **UI Feedback:** Basic error handling and visual cues for task priority and completion.
 
 ## Project Structure
 
-The project follows a standard Maven layout and organizes the backend code using a layered approach:
+*   `src/main/java/com/taskmanager/`: Root package for Java source code.
+    *   `controller/`: Spring MVC controllers for handling HTTP requests.
+    *   `model/`: JPA entities.
+    *   `repository/`: Spring Data JPA repositories.
+    *   `service/`: Business logic services.
+    *   `TaskManagerApplication.java`: Main Spring Boot application class and data seeder.
+*   `src/main/resources/`:
+    *   `application.properties`: Spring Boot configuration (e.g., database settings).
+    *   `static/`: Static web assets (HTML, JS, CSS if not using CDN).
+*   `pom.xml`: Maven project configuration.
 
-*   `src/main/java/com/kidaro/kael/`: Root package for Java source code.
-    *   `controller/`: Handles incoming HTTP requests and maps them to service methods.
-    *   `model/`: Defines JPA entities representing database tables.
-    *   `repository/`: Spring Data JPA repository interfaces for database access.
-    *   `service/`: Contains business logic and orchestrates repository calls.
-    *   `KaelApplication.java`: Main Spring Boot application class and initial data loader.
-*   `src/main/resources/`: Contains non-Java resources.
-    *   `application.properties`: Configuration file for Spring Boot (database connection, server settings, etc.).
-    *   `static/`: Directory for serving static web content (HTML, CSS, JS - though CSS/JS are mainly via CDN or inline).
-*   `src/test/java/`: Contains unit and integration tests (basic context load test included).
-*   `pom.xml`: Maven project configuration file, defining dependencies (Spring Boot starters, Lombok, PostgreSQL driver) and build settings.
-*   `target/`: Directory where Maven places compiled code and packaged artifacts (ignored by Git).
+## User Request Flow (Example: Adding a Task)
 
-## User Request Flow
-
-1.  **User Interaction:** The user interacts with the HTML pages in their browser (e.g., fills the login form, selects materials on the order page).
-2.  **Frontend JS:** JavaScript captures the user action and makes an asynchronous `fetch` request to the appropriate backend API endpoint (e.g., `POST /auth/login`, `GET /materials`, `POST /orders`).
-3.  **Backend Controller:** The Spring Boot `RestController` matching the request path receives the request.
-4.  **Backend Service:** The controller calls the relevant `Service` method to perform the business logic (e.g., validate credentials, fetch data from the database, update stock, save new order).
-5.  **Backend Repository:** The service interacts with `JpaRepository` interfaces to perform database operations (querying, saving, updating entities).
-6.  **Backend Response:** The controller receives the result from the service and sends an HTTP response (usually JSON data or an HTTP status code) back to the browser.
-7.  **Frontend JS:** The JavaScript `fetch` callback receives the response, processes the data (if any), and updates the HTML DOM to reflect the changes (e.g., shows a success message, redirects the user, displays the order list).
-8.  **User Sees Update:** The user sees the updated UI in their browser.
+1.  **User Interaction:** User fills out the "Add Task" form on `tasks.html` and clicks "Add Task".
+2.  **Frontend JS (`tasks.html`):**
+    *   Captures form data (description, priority, due date).
+    *   Constructs a JSON payload.
+    *   Makes an asynchronous `fetch` request (`POST /tasks/add`) to the backend.
+3.  **Backend `TaskController`:**
+    *   The `addTask` method receives the request.
+    *   Retrieves the currently logged-in user from the HTTP session.
+    *   If no user is logged in, returns a 401 Unauthorized error.
+    *   Calls `taskService.saveTask(task, user)`.
+4.  **Backend `TaskService`:**
+    *   The `saveTask` method sets the user for the task and saves it using `taskRepository.save(task)`.
+    *   Returns the saved task.
+5.  **Backend `TaskController`:**
+    *   Returns the newly created task as JSON with a 200 OK status.
+6.  **Frontend JS (`tasks.html`):**
+    *   The `fetch` callback receives the response.
+    *   If successful, it dynamically adds the new task to the displayed list on the page.
+    *   Clears the form.
 
 ```mermaid
 sequenceDiagram
     participant User Browser
-    participant Frontend JS
-    participant Backend Controller
-    participant Backend Service
-    participant Backend Repository
+    participant Frontend JS (tasks.html)
+    participant TaskController (Backend)
+    participant TaskService (Backend)
+    participant TaskRepository (Backend)
     participant Database
 
-    User Browser->>Frontend JS: User interacts (e.g., clicks button, submits form)
-    Frontend JS->>Backend Controller: Sends fetch request (e.g., POST /orders)
-    Backend Controller->>Backend Service: Calls service method (e.g., placeOrder())
-    Backend Service->>Backend Repository: Calls repository method (e.g., save(order))
-    Backend Repository->>Database: Executes SQL query (e.g., INSERT)
-    Database-->>Backend Repository: Returns result
-    Backend Repository-->>Backend Service: Returns data/confirmation
-    Backend Service-->>Backend Controller: Returns result
-    Backend Controller-->>Frontend JS: Sends HTTP response (e.g., 201 Created, JSON)
-    Frontend JS->>User Browser: Updates DOM (e.g., show success message, redirect)
+    User Browser->>Frontend JS (tasks.html): Fills and submits 'Add Task' form
+    Frontend JS (tasks.html)->>TaskController (Backend): POST /tasks/add (Task JSON)
+    TaskController (Backend)->>TaskService (Backend): saveTask(task, user)
+    TaskService (Backend)->>TaskRepository (Backend): save(task)
+    TaskRepository (Backend)->>Database: INSERT Task
+    Database-->>TaskRepository (Backend): Returns saved Task
+    TaskRepository (Backend)-->>TaskService (Backend): Returns saved Task
+    TaskService (Backend)-->>TaskController (Backend): Returns saved Task
+    TaskController (Backend)-->>Frontend JS (tasks.html): HTTP 200 OK (Task JSON)
+    Frontend JS (tasks.html)->>User Browser: Updates DOM to display new task
 ```
 
 ## Setup and Running
 
 ### Prerequisites
 
-*   **Java Development Kit (JDK):** Version 21 or later.
+*   **Java Development Kit (JDK):** Version 17 or later.
 *   **Apache Maven:** To build and run the project.
-*   **PostgreSQL Database:** A running instance accessible to the application. You can use a local installation, Docker, or a cloud service like Neon (as configured in `application.properties`).
 
 ### Configuration
 
-1.  **Database:**
-    *   Ensure you have a PostgreSQL database created.
-    *   Update the `spring.datasource.url`, `spring.datasource.username`, and `spring.datasource.password` properties in `src/main/resources/application.properties` to match your database connection details. The current configuration points to a Neon cloud database.
+*   The application uses an H2 in-memory database by default. No specific database setup is required for basic operation.
+*   If you wish to use a persistent database like PostgreSQL, configure the connection details in `src/main/resources/application.properties`.
 
 ### Running the Application
 
-1.  **Navigate:** Open a terminal or command prompt in the project's root directory (`d:\Development\Satoru\kael\kael\`).
-2.  **Run with Maven:** Execute the following Maven command:
+1.  **Clone the repository (if applicable) or ensure you have the project files.**
+2.  **Navigate to the project root directory** in a terminal or command prompt.
+    (e.g., `d:\\Development\\DreamCoil\\bugfix\\ratih\\TugasBesar_PBO\\`)
+3.  **Run with Maven:**
     ```bash
     mvn spring-boot:run
     ```
-    (Use `mvnw.cmd spring-boot:run` on Windows Command Prompt)
-3.  **Access:** Once Spring Boot starts (look for `Tomcat started on port(s): 8080`), open your web browser and navigate to `http://localhost:8080`.
+    On Windows, if `mvn` is not in PATH but `mvnw.cmd` is present:
+    ```bash
+    .\\mvnw.cmd spring-boot:run
+    ```
+4.  **Access:** Once Spring Boot starts (typically on port 8080), open your web browser and navigate to:
+    *   `http://localhost:8080/` (should redirect to login or tasks)
+    *   `http://localhost:8080/login.html` to log in.
+    *   `http://localhost:8080/register.html` to create a new account.
 
-You should see the landing page (`index.html`). You can then navigate to the login page (`/login.html`) and use the default credentials (cashier/pass or manager/adminpass) seeded by the `CommandLineRunner`.
+    The seeded 'admin' user has credentials:
+    *   Username: `admin`
+    *   Password: `password`
+
+## API Endpoints
+
+### Auth Controller (`/auth`)
+
+*   `POST /register`: Registers a new user.
+    *   Request Body: `{"username": "user", "password": "password"}`
+    *   Response: Success message or error.
+*   `POST /login`: Logs in an existing user.
+    *   Request Body: `{"username": "user", "password": "password"}`
+    *   Response: Success message or error. Sets user in session.
+*   `POST /logout`: Logs out the current user.
+    *   Response: Success message. Clears user from session.
+
+### Task Controller (`/tasks`)
+
+*All endpoints require an authenticated user session.*
+
+*   `GET /`: Retrieves all tasks for the logged-in user.
+    *   Response: `List<Task>`
+*   `POST /add`: Adds a new task for the logged-in user.
+    *   Request Body: `Task` JSON (e.g., `{"description": "New Task", "priority": 1, "dueDate": "YYYY-MM-DD"}`)
+    *   Response: Created `Task` object.
+*   `PUT /{id}`: Updates an existing task by its ID.
+    *   Request Body: `Task` JSON with fields to update.
+    *   Response: Updated `Task` object.
+*   `DELETE /{id}`: Deletes a task by its ID.
+    *   Response: Success message or error.
+*   `DELETE /all`: Deletes all tasks for the logged-in user.
+    *   Response: Success message or error.
+
+## Future Enhancements / Considerations
+
+*   **Security:** Implement Spring Security for robust authentication and authorization.
+*   **Error Handling:** More sophisticated global error handling and user feedback.
+*   **Input Validation:** Comprehensive server-side and client-side input validation.
+*   **Frontend Framework:** Consider a JavaScript framework (React, Vue, Angular) for more complex UIs.
+*   **Testing:** Add more comprehensive unit and integration tests.
+*   **Password Hashing:** Ensure strong password hashing is used (Spring Security typically handles this).

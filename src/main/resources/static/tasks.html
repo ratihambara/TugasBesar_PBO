@@ -1,23 +1,373 @@
 <!DOCTYPE html>
 <html>
-<head><title>Tasks</title></head>
-<body>
-<h2>Your Tasks</h2>
-<form method="post" action="/add">
-    <input name="description" placeholder="New Task" required>
-    <button type="submit">Add Task</button>
-</form>
-<ul>
-    <th:block th:each="task : ${tasks}">
-        <li>
-            <span th:text="${task.description}"></span>
-            <form method="post" action="/delete" style="display:inline;">
-                <input type="hidden" name="id" th:value="${task.id}">
-                <button type="submit">Delete</button>
+<head>
+    <title>Tasks</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'gray-50': '#fafafa',
+                        'gray-100': '#f5f5f5',
+                        'gray-200': '#e5e5e5',
+                        'gray-300': '#d4d4d4',
+                        'gray-400': '#a3a3a3',
+                        'gray-500': '#737373',
+                        'gray-600': '#525252',
+                        'gray-700': '#404040',
+                        'gray-800': '#262626',
+                        'gray-900': '#171717',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .priority-low { background-color: #10b981; }
+        .priority-medium { background-color: #f59e0b; }
+        .priority-high { background-color: #ef4444; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900 font-sans">
+    <div class="max-w-4xl mx-auto p-6">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-light text-gray-800 mb-2">Tasks</h1>
+            <div class="w-12 h-0.5 bg-gray-800"></div>
+        </div>
+
+        <!-- Add Task Form -->
+        <div class="bg-white border border-gray-200 mb-6">
+            <form id="addTaskForm" class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div>
+                        <label for="description" class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                        <input type="text" id="description" name="description" placeholder="New Task" required
+                               class="w-full px-3 py-2 border border-gray-300 bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:border-gray-600">
+                    </div>
+                    <div>
+                        <label for="priority" class="block text-sm font-medium text-gray-700 mb-2">Priority</label>
+                        <select id="priority" name="priority"
+                                class="w-full px-3 py-2 border border-gray-300 bg-white text-gray-900 focus:outline-none focus:border-gray-600">
+                            <option value="0">Low</option>
+                            <option value="1">Medium</option>
+                            <option value="2">High</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="dueDate" class="block text-sm font-medium text-gray-700 mb-2">Due Date</label>
+                        <input type="date" id="dueDate" name="dueDate"
+                               class="w-full px-3 py-2 border border-gray-300 bg-white text-gray-900 focus:outline-none focus:border-gray-600">
+                    </div>
+                </div>
+                <button type="submit" class="bg-gray-800 text-white px-6 py-2 hover:bg-gray-700 transition-colors font-medium">
+                    Add Task
+                </button>
             </form>
-        </li>
-    </th:block>
-</ul>
-<a href="/logout">Logout</a>
+        </div>
+
+        <!-- Task List -->
+        <div id="taskList" class="space-y-2 mb-6"></div>
+
+        <!-- Actions -->
+        <div class="flex justify-between items-center pt-6 border-t border-gray-200">
+            <button id="clearAllTasksButton" class="bg-red-600 text-white px-4 py-2 hover:bg-red-700 transition-colors font-medium">
+                Clear All Tasks
+            </button>
+            <a href="/logout" class="text-gray-600 hover:text-gray-800 transition-colors">Logout</a>
+        </div>
+    </div>
+
+    <!-- Edit Task Modal -->
+    <div id="editTaskModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white border border-gray-300 w-full max-w-md mx-4">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-light text-gray-800">Edit Task</h2>
+                    <button onclick="closeEditModal()" class="text-gray-500 hover:text-gray-800 text-2xl font-light">×</button>
+                </div>
+                <form id="editTaskForm">
+                    <input type="hidden" id="editTaskId" name="editTaskId">
+                    <div class="space-y-4">
+                        <div>
+                            <label for="editDescription" class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                            <input type="text" id="editDescription" name="editDescription" required
+                                   class="w-full px-3 py-2 border border-gray-300 bg-white text-gray-900 focus:outline-none focus:border-gray-600">
+                        </div>
+                        <div>
+                            <label for="editPriority" class="block text-sm font-medium text-gray-700 mb-2">Priority</label>
+                            <select id="editPriority" name="editPriority"
+                                    class="w-full px-3 py-2 border border-gray-300 bg-white text-gray-900 focus:outline-none focus:border-gray-600">
+                                <option value="0">Low</option>
+                                <option value="1">Medium</option>
+                                <option value="2">High</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="editDueDate" class="block text-sm font-medium text-gray-700 mb-2">Due Date</label>
+                            <input type="date" id="editDueDate" name="editDueDate"
+                                   class="w-full px-3 py-2 border border-gray-300 bg-white text-gray-900 focus:outline-none focus:border-gray-600">
+                        </div>
+                        <div class="flex items-center">
+                            <input type="checkbox" id="editCompleted" name="editCompleted" class="mr-3 w-4 h-4">
+                            <label for="editCompleted" class="text-sm font-medium text-gray-700">Completed</label>
+                        </div>
+                    </div>
+                    <div class="flex justify-end space-x-3 mt-6 pt-6 border-t border-gray-200">
+                        <button type="button" onclick="closeEditModal()" class="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors">
+                            Cancel
+                        </button>
+                        <button type="submit" class="bg-gray-800 text-white px-4 py-2 hover:bg-gray-700 transition-colors">
+                            Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const taskList = document.getElementById('taskList');
+            const addTaskForm = document.getElementById('addTaskForm');
+            const clearAllTasksButton = document.getElementById('clearAllTasksButton');
+            const editTaskModal = document.getElementById('editTaskModal');
+            const editTaskForm = document.getElementById('editTaskForm');
+
+            // Function to get priority class
+            function getPriorityClass(priority) {
+                switch (priority) {
+                    case 0: return 'priority-low';
+                    case 1: return 'priority-medium';
+                    case 2: return 'priority-high';
+                    default: return '';
+                }
+            }
+
+            function getPriorityText(priority) {
+                switch (priority) {
+                    case 0: return 'Low';
+                    case 1: return 'Medium';
+                    case 2: return 'High';
+                    default: return 'Unknown';
+                }
+            }
+
+            // Function to fetch and display tasks
+            async function fetchTasks() {
+                try {
+                    const response = await fetch('/tasks');
+                    if (!response.ok) {
+                        if (response.status === 401 || response.status === 403) {
+                            window.location.href = '/login.html';
+                            return;
+                        }
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const tasks = await response.json();
+                    taskList.innerHTML = '';
+                    
+                    // Sort by priority (High first), then by due date (earliest first)
+                    tasks.sort((a, b) => {
+                        if (a.priority !== b.priority) {
+                            return b.priority - a.priority;
+                        }
+                        if (a.dueDate === null && b.dueDate === null) return 0;
+                        if (a.dueDate === null) return 1;
+                        if (b.dueDate === null) return -1;
+                        return new Date(a.dueDate) - new Date(b.dueDate);
+                    });
+
+                    tasks.forEach(task => {
+                        const taskElement = document.createElement('div');
+                        taskElement.className = 'bg-white border border-gray-200 p-4';
+                        
+                        taskElement.innerHTML = `
+                            <div class="flex items-center justify-between">
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center space-x-3">
+                                        <span class="text-sm font-medium ${task.completed ? 'line-through text-gray-500' : 'text-gray-900'}">${task.description}</span>
+                                        <span class="inline-flex items-center px-2 py-1 text-xs font-medium text-white ${getPriorityClass(task.priority)}">${getPriorityText(task.priority)}</span>
+                                    </div>
+                                    ${task.dueDate ? `<div class="text-sm text-gray-500 mt-1">Due: ${task.dueDate}</div>` : ''}
+                                </div>
+                                <div class="flex items-center space-x-2 ml-4">
+                                    <button onclick="openEditModal(${JSON.stringify(task).replace(/"/g, '&quot;')})" 
+                                            class="text-sm text-gray-600 hover:text-gray-800 transition-colors border border-gray-300 px-3 py-1">
+                                        Edit
+                                    </button>
+                                    <button onclick="toggleCompleteTask(${task.id}, ${!task.completed})" 
+                                            class="text-sm text-white px-3 py-1 transition-colors ${task.completed ? 'bg-yellow-600 hover:bg-yellow-700' : 'bg-green-600 hover:bg-green-700'}">
+                                        ${task.completed ? 'Undo' : 'Complete'}
+                                    </button>
+                                    <button onclick="deleteTask(${task.id})" 
+                                            class="text-sm text-white bg-red-600 hover:bg-red-700 transition-colors px-3 py-1">
+                                        Delete
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                        
+                        taskList.appendChild(taskElement);
+                    });
+
+                    if (tasks.length === 0) {
+                        taskList.innerHTML = '<div class="text-center text-gray-500 py-12">No tasks yet. Add one above to get started.</div>';
+                    }
+                } catch (error) {
+                    console.error('Error fetching tasks:', error);
+                    taskList.innerHTML = '<div class="text-center text-red-600 py-12">Error loading tasks. Please try again.</div>';
+                }
+            }
+
+            // Function to add a new task
+            addTaskForm.addEventListener('submit', async function(event) {
+                event.preventDefault();
+                const description = document.getElementById('description').value;
+                const priority = parseInt(document.getElementById('priority').value, 10);
+                const dueDate = document.getElementById('dueDate').value || null;
+
+                try {
+                    const response = await fetch('/tasks/add', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ description, priority, dueDate, completed: false }),
+                    });
+                    if (!response.ok) {
+                        if (response.status === 401 || response.status === 403) { 
+                            window.location.href = '/login.html'; 
+                            return; 
+                        }
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    fetchTasks();
+                    addTaskForm.reset();
+                } catch (error) {
+                    console.error('Error adding task:', error);
+                    alert('Error adding task. Please try again.');
+                }
+            });
+
+            // Edit Modal Functions
+            window.openEditModal = function(task) {
+                document.getElementById('editTaskId').value = task.id;
+                document.getElementById('editDescription').value = task.description;
+                document.getElementById('editPriority').value = task.priority;
+                document.getElementById('editDueDate').value = task.dueDate || '';
+                document.getElementById('editCompleted').checked = task.completed;
+                editTaskModal.classList.remove('hidden');
+                editTaskModal.classList.add('flex');
+            }
+
+            window.closeEditModal = function() {
+                editTaskModal.classList.add('hidden');
+                editTaskModal.classList.remove('flex');
+            }
+
+            editTaskModal.addEventListener('click', function(event) {
+                if (event.target === editTaskModal) {
+                    closeEditModal();
+                }
+            });
+
+            editTaskForm.addEventListener('submit', async function(event) {
+                event.preventDefault();
+                const id = document.getElementById('editTaskId').value;
+                const description = document.getElementById('editDescription').value;
+                const priority = parseInt(document.getElementById('editPriority').value, 10);
+                const dueDate = document.getElementById('editDueDate').value || null;
+                const completed = document.getElementById('editCompleted').checked;
+
+                try {
+                    const response = await fetch(`/tasks/${id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ description, priority, dueDate, completed }),
+                    });
+                    if (!response.ok) {
+                        if (response.status === 401 || response.status === 403) { 
+                            window.location.href = '/login.html'; 
+                            return; 
+                        }
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    fetchTasks();
+                    closeEditModal();
+                } catch (error) {
+                    console.error('Error updating task:', error);
+                    alert('Error updating task. Please try again.');
+                }
+            });
+
+            // Function to toggle task completion
+            window.toggleCompleteTask = async function(taskId, newCompletedState) {
+                try {
+                    const taskResponse = await fetch('/tasks');
+                    const tasks = await taskResponse.json();
+                    const taskToUpdate = tasks.find(t => t.id === taskId);
+                    if (!taskToUpdate) throw new Error('Task not found for toggling completion');
+
+                    const response = await fetch(`/tasks/${taskId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ ...taskToUpdate, completed: newCompletedState }),
+                    });
+
+                    if (!response.ok) {
+                        if (response.status === 401 || response.status === 403) { 
+                            window.location.href = '/login.html'; 
+                            return; 
+                        }
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    fetchTasks();
+                } catch (error) {
+                    console.error('Error toggling task completion:', error);
+                    alert('Error updating task. Please try again.');
+                }
+            }
+
+            // Function to delete a task
+            window.deleteTask = async function(taskId) {
+                if (!confirm('Are you sure you want to delete this task?')) return;
+                try {
+                    const response = await fetch(`/tasks/${taskId}`, { method: 'DELETE' });
+                    if (!response.ok) {
+                        if (response.status === 401 || response.status === 403) { 
+                            window.location.href = '/login.html'; 
+                            return; 
+                        }
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    fetchTasks();
+                } catch (error) {
+                    console.error('Error deleting task:', error);
+                    alert('Error deleting task. Please try again.');
+                }
+            }
+
+            // Function to clear all tasks
+            clearAllTasksButton.addEventListener('click', async function() {
+                if (!confirm('Are you sure you want to delete ALL tasks?')) return;
+                try {
+                    const response = await fetch('/tasks/all', { method: 'DELETE' });
+                    if (!response.ok) {
+                        if (response.status === 401 || response.status === 403) { 
+                            window.location.href = '/login.html'; 
+                            return; 
+                        }
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    fetchTasks();
+                } catch (error) {
+                    console.error('Error clearing all tasks:', error);
+                    alert('Error clearing all tasks. Please try again.');
+                }
+            });
+
+            fetchTasks(); // Initial fetch
+        });
+    </script>
 </body>
 </html>
