@@ -1,6 +1,7 @@
 package com.taskmanager.model;
 
 import jakarta.persistence.*;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "tasks")
@@ -10,6 +11,10 @@ public class Task {
     private Long id;
 
     private String description;
+
+    private int priority; // 0: low, 1: medium, 2: high
+    private boolean completed; // Added completed field
+    private LocalDate dueDate; // Added dueDate field
 
     @ManyToOne
     @JoinColumn(name = "user_id")
@@ -30,6 +35,30 @@ public class Task {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+        public int getPriority() {
+        return priority;
+    }
+
+    public void setPriority(int priority) {
+        this.priority = priority;
+    }
+
+    public boolean isCompleted() { // Getter for completed
+        return completed;
+    }
+
+    public void setCompleted(boolean completed) { // Setter for completed
+        this.completed = completed;
+    }
+
+    public LocalDate getDueDate() { // Getter for dueDate
+        return dueDate;
+    }
+
+    public void setDueDate(LocalDate dueDate) { // Setter for dueDate
+        this.dueDate = dueDate;
     }
 
     public User getUser() {
