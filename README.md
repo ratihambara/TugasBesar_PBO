@@ -45,7 +45,7 @@ Menampilkan notifikasi dan memperbarui tampilan halaman secara dinamis
       `index.html`, `login.html`, `register.html`, `tasks.html`
 *   `src/test/java/com/taskmanager/`: `TaskManagerApplicationTests.java` → Pengujian awal aplikasi
 *   `pom.xml`: Konfigurasi Maven dan dependensi
-*   
+    
 ## User Request Flow
 
 1.  Pengguna membuka halaman seperti login.html atau register.html.
