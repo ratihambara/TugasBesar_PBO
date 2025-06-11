@@ -42,21 +42,18 @@ Menampilkan notifikasi dan memperbarui tampilan halaman secara dinamis
 *   `src/main/resources/`: Contains non-Java resources.
     *   `application.properties`: Konfigurasi database dan server.
     *   `static/`:
-                * `index.html`  
-*   `src/test/java/`: Contains unit and integration tests (basic context load test included).
-*   `pom.xml`: Maven project configuration file, defining dependencies (Spring Boot starters, Lombok, PostgreSQL driver) and build settings.
-*   `target/`: Directory where Maven places compiled code and packaged artifacts (ignored by Git).
-
+      `index.html`, `login.html`, `register.html`, `tasks.html`
+*   `src/test/java/com/taskmanager/`: `TaskManagerApplicationTests.java` → Pengujian awal aplikasi
+*   `pom.xml`: Konfigurasi Maven dan dependensi
+*   
 ## User Request Flow
 
-1.  **User Interaction:** The user interacts with the HTML pages in their browser (e.g., fills the login form, selects materials on the order page).
-2.  **Frontend JS:** JavaScript captures the user action and makes an asynchronous `fetch` request to the appropriate backend API endpoint (e.g., `POST /auth/login`, `GET /materials`, `POST /orders`).
-3.  **Backend Controller:** The Spring Boot `RestController` matching the request path receives the request.
-4.  **Backend Service:** The controller calls the relevant `Service` method to perform the business logic (e.g., validate credentials, fetch data from the database, update stock, save new order).
-5.  **Backend Repository:** The service interacts with `JpaRepository` interfaces to perform database operations (querying, saving, updating entities).
-6.  **Backend Response:** The controller receives the result from the service and sends an HTTP response (usually JSON data or an HTTP status code) back to the browser.
-7.  **Frontend JS:** The JavaScript `fetch` callback receives the response, processes the data (if any), and updates the HTML DOM to reflect the changes (e.g., shows a success message, redirects the user, displays the order list).
-8.  **User Sees Update:** The user sees the updated UI in their browser.
+1.  Pengguna membuka halaman seperti login.html atau register.html.
+2.  JavaScript menangani input form dan mengirim permintaan HTTP `fetch` ke backend API endpoint (`/auth/login`, `/auth/register`, `/tasks`).
+3.  Controller di backend menerima permintaan dan meneruskannya ke service.
+4.  Service menjalankan logika bisnis dan menggunakan repository untuk mengakses atau memodifikasi data di database.
+5.  Hasil dikembalikan sebagai respons HTTP.
+6.  JavaScript di frontend memperbarui tampilan sesuai hasil (menampilkan tugas, notifikasi, atau navigasi ke halaman lain).
 
 ```mermaid
 sequenceDiagram
@@ -84,23 +81,24 @@ sequenceDiagram
 ### Prerequisites
 
 *   **Java Development Kit (JDK):** Version 21 or later.
-*   **Apache Maven:** To build and run the project.
-*   **PostgreSQL Database:** A running instance accessible to the application. You can use a local installation, Docker, or a cloud service like Neon (as configured in `application.properties`).
+*   **Apache Maven** 
+*   **PostgreSQL Database:** NeonDB
 
 ### Configuration
 
 1.  **Database:**
-    *   Ensure you have a PostgreSQL database created.
-    *   Update the `spring.datasource.url`, `spring.datasource.username`, and `spring.datasource.password` properties in `src/main/resources/application.properties` to match your database connection details. The current configuration points to a Neon cloud database.
+    *   Edit file `src/main/resources/application.properties`:
+    *   Update the `spring.datasource.url`, `spring.datasource.username`, and `spring.datasource.password` menyesuaikan dengan Neon cloud database.
 
 ### Running the Application
 
-1.  **Navigate:** Open a terminal or command prompt in the project's root directory (`d:\Development\Satoru\kael\kael\`).
-2.  **Run with Maven:** Execute the following Maven command:
+1.  Buka terminal di direktori root proyek.
+2.  **Run with Maven:**
     ```bash
     mvn spring-boot:run
     ```
-    (Use `mvnw.cmd spring-boot:run` on Windows Command Prompt)
-3.  **Access:** Once Spring Boot starts (look for `Tomcat started on port(s): 8080`), open your web browser and navigate to `http://localhost:8080`.
+3.  **Access:** buka browser `http://localhost:8080`.
+4.  Gunakan `register.html` untuk mendaftar akun baru. Lalu login melalui `login.html` dan kelola tugas di `tasks.html`.
 
-You should see the landing page (`index.html`). You can then navigate to the login page (`/login.html`) and use the default credentials (cashier/pass or manager/adminpass) seeded by the `CommandLineRunner`.
+
+
