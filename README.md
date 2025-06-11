@@ -41,33 +41,11 @@ Menampilkan notifikasi dan memperbarui tampilan halaman secara dinamis
     *   `TaskManagerApplication.java`: Kelas utama dan entry point Spring Boot
 *   `src/main/resources/`: Contains non-Java resources.
     *   `application.properties`: Konfigurasi database dan server.
-    *   `static/`: index.html
-                ├── login.html
-                ├── register.html
-                └── tasks.html
+    *   `static/`:
+                * `index.html`  
 *   `src/test/java/`: Contains unit and integration tests (basic context load test included).
 *   `pom.xml`: Maven project configuration file, defining dependencies (Spring Boot starters, Lombok, PostgreSQL driver) and build settings.
 *   `target/`: Directory where Maven places compiled code and packaged artifacts (ignored by Git).
-
-src/
- └── main/
-      ├── java/com/taskmanager/
-      │    ├── controller/          → AuthController.java, TaskController.java
-      │    ├── model/               → Task.java, User.java
-      │    ├── repository/          → TaskRepository.java, UserRepository.java
-      │    ├── service/             → TaskService.java, UserService.java
-      │    └── TaskManagerApplication.java → Kelas utama dan entry point Spring Boot
-      └── resources/
-           ├── application.properties     → Konfigurasi database dan server
-           └── static/
-                ├── index.html
-                ├── login.html
-                ├── register.html
-                └── tasks.html
-test/
- └── java/com/taskmanager/
-      └── TaskManagerApplicationTests.java → Pengujian awal aplikasi
-pom.xml → Konfigurasi Maven dan dependensi
 
 ## User Request Flow
 
