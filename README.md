@@ -1,51 +1,73 @@
-# NightFall POS 🌙 - Spring Boot + Static HTML POS Application
+# Task Manager ✅ - Aplikasi Manajemen Tugas dengan Spring Boot & HTML Statis
 
-A simple, yet functional Point-of-Sale (POS) system designed for construction material suppliers, built with Spring Boot for the backend and static HTML/CSS/JS for the frontend.
+Task Manager adalah aplikasi web sederhana untuk mencatat dan mengelola tugas harian. Backend dibangun dengan Spring Boot, sedangkan antarmuka pengguna dibuat dengan HTML/CSS/JavaScript statis. Cocok untuk pengguna individu, keperluan pembelajaran, atau pengembangan dasar aplikasi manajemen tugas.
 
 ## Overview
 
-This project demonstrates a basic web application structure using modern Java technologies and straightforward frontend development. It allows users (Cashiers/Managers) to log in, view materials, place orders for customers, and view past orders with receipts.
+Aplikasi ini memungkinkan pengguna untuk registrasi, login, dan mengelola daftar tugas seperti menambahkan, mengedit, menyelesaikan, atau menghapus tugas. Semua interaksi dilakukan melalui antarmuka web ringan yang langsung berkomunikasi dengan REST API di backend.
 
 ## Components
 
 ### Backend (Spring Boot)
 
-*   **Framework:** [Spring Boot 3.4.5](https://spring.io/projects/spring-boot) provides a robust foundation for building the RESTful API.
-*   **Data Persistence:** [Spring Data JPA](https://spring.io/projects/spring-data-jpa) simplifies database interactions using repositories and entities.
-*   **Database:** [PostgreSQL](https://www.postgresql.org/) is used as the relational database. The connection details (configured for Neon cloud PostgreSQL) are in `src/main/resources/application.properties`. `spring.jpa.hibernate.ddl-auto=update` allows Hibernate to automatically update the database schema based on entity definitions.
-*   **API:** RESTful endpoints are defined in the `controller` package to handle requests from the frontend.
-*   **Business Logic:** Services in the `service` package encapsulate the core application logic (e.g., placing an order, user authentication).
-*   **Data Models:** Entities in the `model` package represent the database tables (User, Material, Order). Lombok annotations (`@Data`, `@Entity`, etc.) reduce boilerplate code.
-*   **Repositories:** Interfaces in the `repository` package extend `JpaRepository` to provide CRUD operations for the entities.
-*   **Initial Data:** `KaelApplication.java` includes a `CommandLineRunner` bean that populates the database with initial user and material data if the tables are empty.
+*   **Framework:** [Spring Boot 3.4.5]sebagai kerangka kerja utama REST API.
+*   **Database:** Terhubung dengan PostgreSQL (konfigurasi di application.properties), dengan Hibernate yang secara otomatis mengatur skema database (spring.jpa.hibernate.ddl-auto=update).
+*   **Pengelolaan Data:** User → Entitas pengguna aplikasi.
+Task → Entitas tugas dengan informasi seperti judul, deskripsi, status, dan pengguna terkait.
+*   **Controller:** AuthController → Menangani registrasi dan login.
+TaskController → Menangani operasi CRUD tugas.
+*   **Service Layer:** UserService dan TaskService menangani logika bisnis dan interaksi database.
+*   **Repositories:** UserRepository dan TaskRepository menggunakan JpaRepository untuk akses data.
+*   **Seeder Opsional:** Logika untuk menambahkan data awal (jika diperlukan) dapat ditambahkan di TaskManagerApplication.java menggunakan CommandLineRunner.
 
 ### Frontend (Static HTML, Tailwind CSS, JavaScript)
 
-*   **Structure:** Plain HTML files located in `src/main/resources/static/` define the user interface (`index.html`, `login.html`, `order.html`, `orders.html`, `receipt.html`).
-*   **Styling:** [Tailwind CSS](https://tailwindcss.com/) (via CDN) is used for utility-first styling, providing a modern look and feel with the "Neo-Brutalist" aesthetic. Custom styles are minimal.
-*   **Interactivity:** Vanilla JavaScript embedded within `<script>` tags in each HTML file handles:
-    *   **API Interaction:** Using the `fetch` API to communicate with the Spring Boot backend (e.g., logging in, fetching materials, placing orders, retrieving order lists/details).
-    *   **DOM Manipulation:** Dynamically updating the page content based on API responses or user actions (e.g., populating material dropdowns, displaying order totals, showing success/error messages).
-    *   **Form Handling:** Capturing user input and validating forms before submission.
-    *   **Basic Auth Simulation:** Using `sessionStorage` to store a simple login flag (`isLoggedIn`) for basic route protection (redirecting to `login.html` if not set). **Note:** This is *not* secure production authentication.
-    *   **UI Feedback:** Displaying loading states and toast notifications.
+*   **Structure:** (berada di folder static/):
+  1. index.html → Halaman utama
+  2. login.html → Form login
+  3. register.html → Form registrasi
+  4. tasks.html → Dashboard manajemen tugas
+*   **JavaScript:**Menggunakan fetch() untuk berkomunikasi dengan backend
+Menyimpan status login sederhana dengan sessionStorage
+Menampilkan notifikasi dan memperbarui tampilan halaman secara dinamis
+
 
 ## Project Structure
-
-The project follows a standard Maven layout and organizes the backend code using a layered approach:
-
-*   `src/main/java/com/kidaro/kael/`: Root package for Java source code.
-    *   `controller/`: Handles incoming HTTP requests and maps them to service methods.
-    *   `model/`: Defines JPA entities representing database tables.
-    *   `repository/`: Spring Data JPA repository interfaces for database access.
-    *   `service/`: Contains business logic and orchestrates repository calls.
-    *   `KaelApplication.java`: Main Spring Boot application class and initial data loader.
+*   `src/main/java/com/taskmanager/`: Root package for Java source code.
+    *   `controller/`: AuthController.java, TaskController.java
+    *   `model/`: Task.java, User.java
+    *   `repository/`: TaskRepository.java, UserRepository.java
+    *   `service/`: TaskService.java, UserService.java
+    *   `TaskManagerApplication.java`: Kelas utama dan entry point Spring Boot
 *   `src/main/resources/`: Contains non-Java resources.
-    *   `application.properties`: Configuration file for Spring Boot (database connection, server settings, etc.).
-    *   `static/`: Directory for serving static web content (HTML, CSS, JS - though CSS/JS are mainly via CDN or inline).
+    *   `application.properties`: Konfigurasi database dan server.
+    *   `static/`: index.html
+                ├── login.html
+                ├── register.html
+                └── tasks.html
 *   `src/test/java/`: Contains unit and integration tests (basic context load test included).
 *   `pom.xml`: Maven project configuration file, defining dependencies (Spring Boot starters, Lombok, PostgreSQL driver) and build settings.
 *   `target/`: Directory where Maven places compiled code and packaged artifacts (ignored by Git).
+
+src/
+ └── main/
+      ├── java/com/taskmanager/
+      │    ├── controller/          → AuthController.java, TaskController.java
+      │    ├── model/               → Task.java, User.java
+      │    ├── repository/          → TaskRepository.java, UserRepository.java
+      │    ├── service/             → TaskService.java, UserService.java
+      │    └── TaskManagerApplication.java → Kelas utama dan entry point Spring Boot
+      └── resources/
+           ├── application.properties     → Konfigurasi database dan server
+           └── static/
+                ├── index.html
+                ├── login.html
+                ├── register.html
+                └── tasks.html
+test/
+ └── java/com/taskmanager/
+      └── TaskManagerApplicationTests.java → Pengujian awal aplikasi
+pom.xml → Konfigurasi Maven dan dependensi
 
 ## User Request Flow
 
